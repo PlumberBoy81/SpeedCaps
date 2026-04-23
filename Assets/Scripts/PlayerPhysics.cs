@@ -34,9 +34,11 @@ public class PlayerPhysics : MonoBehaviour
 
     void FixedUpdate()
     {
-        Move();
-
         Ground();
+
+        Snap();
+
+        Move();
         
         if (!ground)
             Gravity();
@@ -65,10 +67,21 @@ public class PlayerPhysics : MonoBehaviour
 
     [SerializeField] float groundDistance;
 
+    Vector3 normal;
+
     bool ground;
 
     void Ground()
     {
         ground = Physics.Raycast(RB.worldCenterOfMass, -RB.transform.up, out RaycastHit hit, groundDistance, layerMask, QueryTriggerInteraction.Ignore);
+
+        normal = ground ? hit.normal : Vector3.up;
+    }
+
+    // Snap
+
+    void Snap()
+    {
+        transform.up = normal;
     }
 }
