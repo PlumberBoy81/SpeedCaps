@@ -67,6 +67,8 @@ public class PlayerPhysics : MonoBehaviour
 
     [SerializeField] float groundDistance;
 
+    Vector3 point;
+
     Vector3 normal;
 
     bool ground;
@@ -75,6 +77,8 @@ public class PlayerPhysics : MonoBehaviour
     {
         ground = Physics.Raycast(RB.worldCenterOfMass, -RB.transform.up, out RaycastHit hit, groundDistance, layerMask, QueryTriggerInteraction.Ignore);
 
+        point = ground ? hit.point : RB.transform.position;
+
         normal = ground ? hit.normal : Vector3.up;
     }
 
@@ -82,6 +86,14 @@ public class PlayerPhysics : MonoBehaviour
 
     void Snap()
     {
-        transform.up = normal;
+        RB.transform.up = normal;
+
+        Vector3 goal = point;
+
+        Vector3 difference = goal - RB.transform.position;
+
+        if (RB.SweepTest(difference, out _, difference.magnitude, QueryTriggerInteraction.Ignore)) return;
+
+        RB.transform.position = goal;
     }
 }
