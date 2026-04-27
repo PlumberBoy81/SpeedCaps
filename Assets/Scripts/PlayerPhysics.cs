@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class PlayerPhysics : MonoBehaviour
 {
@@ -10,6 +10,8 @@ public class PlayerPhysics : MonoBehaviour
     public Vector3 horizontalVelocity => Vector3.ProjectOnPlane(RB.linearVelocity, RB.transform.up);
 
     public Vector3 verticalVelocity => Vector3.Project(RB.linearVelocity, RB.transform.up);
+
+    public float verticalSpeed => Vector3.Dot(RB.linearVelocity, RB.transform.up);
 
     // Update
 
@@ -39,6 +41,9 @@ public class PlayerPhysics : MonoBehaviour
         
         if (!ground)
             Gravity();
+
+        if (ground && verticalSpeed < RB.sleepThreshold)
+            RB.linearVelocity = horizontalVelocity;
         
         StartCoroutine(LateFixedUpdateRoutine());
 
@@ -56,7 +61,7 @@ public class PlayerPhysics : MonoBehaviour
 
     void Move()
     {
-        RB.linearVelocity = (Vector3.right * Input.GetAxis("Horizontal") * speed) + (Vector3.forward * Input.GetAxis("Vertical") * speed)
+        RB.linearVelocity = Vector3.ProjectOnPlane((Vector3.right * Input.GetAxis("Horizontal") * speed) + (Vector3.forward * Input.GetAxis("Vertical") * speed), normal);
             + verticalVelocity;
     }
 
@@ -76,6 +81,9 @@ public class PlayerPhysics : MonoBehaviour
         Ground();
 
         Snap();
+
+        if (ground)
+            RB.linearVelocity = horizontalVelocity;
     }
 
     // Ground
@@ -90,7 +98,11 @@ public class PlayerPhysics : MonoBehaviour
 
     void Ground()
     {
-        ground = Physics.Raycast(RB.worldCenterOfMass, -RB.transform.up, out RaycastHit hit, groundDistance, layerMask, QueryTriggerInteraction.Ignore);
+        float maxDistance = Mathf.Max(RB.centerOfMass.y, 0) + (RB.sleepThreshold * Time.fixedDeltaTime);
+        
+        if (ground && verticalSpeed < RB.sleepThreshold)
+            maxDistance += groundDistance;
+        ground = Physics.Raycast(RB.worldCenterOfMass, -RB.transform.up, out RaycastHit hit, maxDistance, layerMask, QueryTriggerInteraction.Ignore);
 
         point = ground ? hit.point : RB.transform.position;
 
