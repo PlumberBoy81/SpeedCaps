@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerPhysics : MonoBehaviour
 {
@@ -34,14 +35,19 @@ public class PlayerPhysics : MonoBehaviour
 
     void FixedUpdate()
     {
-        Ground();
-
-        Snap();
-
         Move();
         
         if (!ground)
             Gravity();
+        
+        StartCoroutine(LateFixedUpdateRoutine());
+
+        IEnumerator LateFixedUpdateRoutine()
+        {
+            yield return new WaitForFixedUpdate();
+
+            LateFixedUpdate();
+        }
     }
 
     // Move
@@ -61,6 +67,15 @@ public class PlayerPhysics : MonoBehaviour
     void Gravity()
     {
         RB.linearVelocity -= Vector3.up * gravity * Time.deltaTime;
+    }
+
+    // Late Fixed Update
+    
+    void LateFixedUpdate()
+    {       
+        Ground();
+
+        Snap();
     }
 
     // Ground
