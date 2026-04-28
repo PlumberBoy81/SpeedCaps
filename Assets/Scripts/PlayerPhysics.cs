@@ -41,10 +41,10 @@ public class PlayerPhysics : MonoBehaviour
         
         if (!ground)
             Gravity();
-
-        if (ground && verticalSpeed < RB.sleepThreshold)
+            
+        if (ground && verticalSpeed< RB.sleepThreshold)
             RB.linearVelocity = horizontalVelocity;
-        
+
         StartCoroutine(LateFixedUpdateRoutine());
 
         IEnumerator LateFixedUpdateRoutine()
